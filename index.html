@@ -40,7 +40,7 @@
       left: 0;
       right: 0;
       bottom: 0;
-      background: rgba(255, 192, 203, 0.15); /* Soft pink overlay */
+      background: rgba(255, 192, 203, 0.15);
       z-index: -1;
       mix-blend-mode: overlay;
     }
@@ -53,7 +53,7 @@
       border-radius: 10px;
       max-width: 80%;
       text-align: center;
-      backdrop-filter: blur(2px); /* Adds to dreamy effect */
+      backdrop-filter: blur(2px);
       animation: fadeIn 2s ease-in-out;
     }
     
@@ -61,6 +61,7 @@
       font-size: 1.3rem;
       margin-bottom: 10px;
       text-shadow: 0 0 10px rgba(255,255,255,0.3);
+      animation: float 4s ease-in-out infinite;
     }
     
     input[type="password"] {
@@ -98,6 +99,7 @@
       cursor: pointer;
       z-index: 100;
       transition: all 0.3s ease;
+      display: none; /* Hidden until needed */
     }
     
     #music-control:hover {
@@ -105,7 +107,6 @@
       transform: scale(1.1);
     }
     
-    /* Dreamy floating animation for elements */
     @keyframes float {
       0%, 100% { transform: translateY(0); }
       50% { transform: translateY(-10px); }
@@ -115,11 +116,6 @@
       from { opacity: 0; transform: translateY(20px); }
       to { opacity: 1; transform: translateY(0); }
     }
-    
-    /* Apply floating animation to prompt */
-    #prompt {
-      animation: float 4s ease-in-out infinite;
-    }
   </style>
 </head>
 <body>
@@ -128,13 +124,13 @@
   <button onclick="checkPassword()">Unlock</button>
   <div id="message">- .... . .-. . / .- .-. . / ..-. --- ..- .-. / .. -. / -.-. .- .-. -.. ... / .- -. -.. / --- -. . / .. -. / -- -.-- / .-.. .. ..-. . -.-.-- / ❤️</div>
 
-  <!-- Audio Player -->
-  <audio id="bgMusic" loop>
+  <!-- Audio Player with preload for Safari -->
+  <audio id="bgMusic" loop preload="auto">
     <source src="https://drive.google.com/uc?export=download&id=1UlaPaJmNPA-rWkhru9eqNy8oOsd9LALh" type="audio/mpeg">
     Your browser does not support background music.
   </audio>
   
-  <!-- Music Control Button -->
+  <!-- Music Control Button (initially hidden) -->
   <div id="music-control" onclick="toggleMusic()">🎵</div>
 
   <script>
@@ -143,11 +139,7 @@
       const input = document.getElementById('password').value;
       if (input === "ohh") {
         document.getElementById('message').style.display = 'block';
-        // Start music when message is revealed if not already playing
-        if (bgMusic.paused) {
-          bgMusic.volume = 0.3;
-          bgMusic.play();
-        }
+        startMusic(); // Start music when correct password is entered
       } else {
         alert("Wrong password. Try again!");
       }
@@ -155,34 +147,68 @@
 
     // Music Controls
     const bgMusic = document.getElementById('bgMusic');
+    const musicControl = document.getElementById('music-control');
     
-    // Start music gently when user interacts
+    // Initialize music with proper browser handling
+    function initMusic() {
+      bgMusic.volume = 0.3;
+      
+      // Try muted autoplay (works in some browsers)
+      bgMusic.muted = true;
+      const playPromise = bgMusic.play();
+      
+      if (playPromise !== undefined) {
+        playPromise
+          .then(_ => {
+            // Unmute if autoplay succeeds
+            bgMusic.muted = false;
+            musicControl.style.display = 'none'; // Hide if autoplay works
+          })
+          .catch(error => {
+            // Show play button if autoplay fails
+            musicControl.style.display = 'block';
+          });
+      }
+    }
+
+    // Start music properly
     function startMusic() {
       bgMusic.volume = 0.3;
       const playPromise = bgMusic.play();
       
       if (playPromise !== undefined) {
-        playPromise.catch(error => {
-          // Music will start after user clicks unlock button
-        });
+        playPromise
+          .then(_ => {
+            musicControl.textContent = '🔊';
+            musicControl.style.display = 'none'; // Hide if playing
+          })
+          .catch(error => {
+            musicControl.style.display = 'block'; // Show if blocked
+          });
       }
     }
-    
+
     // Toggle play/pause
     function toggleMusic() {
       if (bgMusic.paused) {
         bgMusic.play();
-        document.getElementById('music-control').textContent = '🔊';
+        musicControl.textContent = '🔊';
       } else {
         bgMusic.pause();
-        document.getElementById('music-control').textContent = '🎵';
+        musicControl.textContent = '🎵';
       }
     }
     
-    // Start music on any user interaction
-    document.addEventListener('click', function() {
-      startMusic();
-    }, { once: true });
+    // Initialize on load
+    document.addEventListener('DOMContentLoaded', function() {
+      initMusic();
+      
+      // Start music on any click (Safari requirement)
+      document.body.addEventListener('click', function firstInteraction() {
+        startMusic();
+        document.body.removeEventListener('click', firstInteraction);
+      });
+    });
   </script>
 </body>
 </html>
