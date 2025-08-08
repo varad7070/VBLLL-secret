@@ -8,8 +8,6 @@
       margin: 0;
       padding: 0;
       font-family: 'Courier New', monospace;
-      background: url('https://images.unsplash.com/photo-1518199266791-5375a83190b7?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80') no-repeat center center fixed;
-      background-size: cover;
       color: #fff;
       display: flex;
       justify-content: center;
@@ -17,7 +15,36 @@
       height: 100vh;
       flex-direction: column;
       text-shadow: 1px 1px 3px #000;
+      overflow: hidden;
     }
+    
+    /* Dreamy background with overlay and blur */
+    body::before {
+      content: "";
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: url('https://images.unsplash.com/photo-1518199266791-5375a83190b7?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80') no-repeat center center;
+      background-size: cover;
+      filter: blur(4px) brightness(0.8);
+      z-index: -2;
+    }
+    
+    /* Dreamy overlay effect */
+    body::after {
+      content: "";
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(255, 192, 203, 0.15); /* Soft pink overlay */
+      z-index: -1;
+      mix-blend-mode: overlay;
+    }
+    
     #message {
       display: none;
       font-size: 1.5rem;
@@ -26,27 +53,41 @@
       border-radius: 10px;
       max-width: 80%;
       text-align: center;
+      backdrop-filter: blur(2px); /* Adds to dreamy effect */
+      animation: fadeIn 2s ease-in-out;
     }
+    
     #prompt {
       font-size: 1.3rem;
       margin-bottom: 10px;
+      text-shadow: 0 0 10px rgba(255,255,255,0.3);
     }
+    
     input[type="password"] {
       padding: 10px;
       font-size: 1rem;
       border-radius: 5px;
       border: none;
       margin-bottom: 10px;
+      background: rgba(255,255,255,0.8);
     }
+    
     button {
       padding: 10px 20px;
       font-size: 1rem;
       border-radius: 5px;
       border: none;
-      background-color: #fff;
+      background-color: rgba(255,255,255,0.9);
       color: #000;
       cursor: pointer;
+      transition: all 0.3s ease;
     }
+    
+    button:hover {
+      background-color: rgba(255,255,255,1);
+      transform: scale(1.05);
+    }
+    
     #music-control {
       position: fixed;
       bottom: 20px;
@@ -56,12 +97,34 @@
       border-radius: 50%;
       cursor: pointer;
       z-index: 100;
+      transition: all 0.3s ease;
+    }
+    
+    #music-control:hover {
+      background: rgba(0,0,0,0.7);
+      transform: scale(1.1);
+    }
+    
+    /* Dreamy floating animation for elements */
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    /* Apply floating animation to prompt */
+    #prompt {
+      animation: float 4s ease-in-out infinite;
     }
   </style>
 </head>
 <body>
   <div id="prompt">First I flirt; then you say _</div>
-  <input type="password" id="password" placeholder="type it with love !">
+  <input type="password" id="password" placeholder="Enter the magic word">
   <button onclick="checkPassword()">Unlock</button>
   <div id="message">- .... . .-. . / .- .-. . / ..-. --- ..- .-. / .. -. / -.-. .- .-. -.. ... / .- -. -.. / --- -. . / .. -. / -- -.-- / .-.. .. ..-. . -.-.-- / ❤️</div>
 
@@ -80,6 +143,11 @@
       const input = document.getElementById('password').value;
       if (input === "ohh") {
         document.getElementById('message').style.display = 'block';
+        // Start music when message is revealed if not already playing
+        if (bgMusic.paused) {
+          bgMusic.volume = 0.3;
+          bgMusic.play();
+        }
       } else {
         alert("Wrong password. Try again!");
       }
@@ -88,25 +156,18 @@
     // Music Controls
     const bgMusic = document.getElementById('bgMusic');
     
-    // Start music gently when page loads
-    document.addEventListener('DOMContentLoaded', function() {
-      bgMusic.volume = 0.3; // Set to 30% volume
-      
-      // Try to autoplay (may require user interaction in some browsers)
+    // Start music gently when user interacts
+    function startMusic() {
+      bgMusic.volume = 0.3;
       const playPromise = bgMusic.play();
       
       if (playPromise !== undefined) {
         playPromise.catch(error => {
-          // Auto-play was prevented
-          console.log("Autoplay prevented - will play after user interaction");
-          document.addEventListener('click', function firstInteraction() {
-            bgMusic.play();
-            document.removeEventListener('click', firstInteraction);
-          });
+          // Music will start after user clicks unlock button
         });
       }
-    });
-
+    }
+    
     // Toggle play/pause
     function toggleMusic() {
       if (bgMusic.paused) {
@@ -117,6 +178,11 @@
         document.getElementById('music-control').textContent = '🎵';
       }
     }
+    
+    // Start music on any user interaction
+    document.addEventListener('click', function() {
+      startMusic();
+    }, { once: true });
   </script>
 </body>
 </html>
