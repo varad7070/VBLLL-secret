@@ -55,25 +55,27 @@
       padding: 10px;
       border-radius: 50%;
       cursor: pointer;
+      z-index: 100;
     }
   </style>
 </head>
 <body>
   <div id="prompt">First I flirt; then you say _</div>
-  <input type="password" id="password" placeholder="sayit!">
+  <input type="password" id="password" placeholder="Enter the magic word">
   <button onclick="checkPassword()">Unlock</button>
   <div id="message">- .... . .-. . / .- .-. . / ..-. --- ..- .-. / .. -. / -.-. .- .-. -.. ... / .- -. -.. / --- -. . / .. -. / -- -.-- / .-.. .. ..-. . -.-.-- / ❤️</div>
 
-  <!-- Audio element for background music -->
+  <!-- Audio Player -->
   <audio id="bgMusic" loop>
-    <source gently.mp3.mp3="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mpeg">
-    <!-- Note: I've used a placeholder music link. Replace with actual Risan music -->
+    <source src="https://drive.google.com/uc?export=download&id=1UlaPaJmNPA-rWkhru9eqNy8oOsd9LALh" type="audio/mpeg">
+    Your browser does not support background music.
   </audio>
-
-  <!-- Music control button -->
+  
+  <!-- Music Control Button -->
   <div id="music-control" onclick="toggleMusic()">🎵</div>
 
   <script>
+    // Password Check
     function checkPassword() {
       const input = document.getElementById('password').value;
       if (input === "ohh") {
@@ -83,20 +85,36 @@
       }
     }
 
-    // Music control functions
+    // Music Controls
     const bgMusic = document.getElementById('bgMusic');
     
     // Start music gently when page loads
-    window.addEventListener('load', function() {
-      bgMusic.volume = 0.3; // Set volume to 30%
-      bgMusic.play().catch(e => console.log("Auto-play prevented:", e));
+    document.addEventListener('DOMContentLoaded', function() {
+      bgMusic.volume = 0.3; // Set to 30% volume
+      
+      // Try to autoplay (may require user interaction in some browsers)
+      const playPromise = bgMusic.play();
+      
+      if (playPromise !== undefined) {
+        playPromise.catch(error => {
+          // Auto-play was prevented
+          console.log("Autoplay prevented - will play after user interaction");
+          document.addEventListener('click', function firstInteraction() {
+            bgMusic.play();
+            document.removeEventListener('click', firstInteraction);
+          });
+        });
+      }
     });
 
+    // Toggle play/pause
     function toggleMusic() {
       if (bgMusic.paused) {
         bgMusic.play();
+        document.getElementById('music-control').textContent = '🔊';
       } else {
         bgMusic.pause();
+        document.getElementById('music-control').textContent = '🎵';
       }
     }
   </script>
