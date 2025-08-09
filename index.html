@@ -119,7 +119,7 @@
   </style>
 </head>
 <body>
-  <div id="prompt">First I flirt; then you say _</div>
+  <div id="prompt">two of my favourite dates (xx/xx/xxxx_xx/xx/xxxx)</div>
   <input type="password" id="password" placeholder="type it with love !">
   <button onclick="checkPassword()">Unlock</button>
   <div id="message">Hi Bharati ! 
@@ -149,7 +149,7 @@ Love, Varad ❤️
     // Password Check
     function checkPassword() {
       const input = document.getElementById('password').value;
-      if (input === "ohh") {
+      if (input === "09/01/2025_01/05/2005") {
         document.getElementById('message').style.display = 'block';
         startMusic(); // Start music when correct password is entered
       } else {
